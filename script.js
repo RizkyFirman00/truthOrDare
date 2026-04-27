@@ -1,8 +1,3 @@
-// =========================================================
-// TRUTH OR DARE — v2 | Multiplayer + Categories + AI
-// =========================================================
-
-// ---- BUILT-IN QUESTION BANK ----
 const QUESTION_BANK = {
   Umum: {
     truth: [
@@ -144,7 +139,6 @@ const el = {
   categoryLabel: document.getElementById("category-label"),
   doneBtn: document.getElementById("done-btn"),
   skipBtn: document.getElementById("skip-btn"),
-  aiModelSelect: document.getElementById("ai-model-select"),
   restartBtn: document.getElementById("restart-btn"),
 };
 
@@ -334,29 +328,22 @@ async function showResult(type) {
   switchScreen(screens.choice, screens.result);
   el.questionText.textContent = "";
 
-  // If AI category, fetch from Pollinations
+  // If AI category, fetch from OpenAI API
   if (selectedCategory === "custom") {
-    const modelVal = el.aiModelSelect?.value || "openai";
-    const modelNames = {
-      "openai-large": "GPT-5.2",
-      gemini: "Gemini 3 Flash",
-    };
     if (el.aiLoadingText)
-      el.aiLoadingText.textContent = `${modelNames[modelVal] || modelVal} sedang menyiapkan pertanyaan...`;
+      el.aiLoadingText.textContent = `OpenAI sedang menyiapkan pertanyaan...`;
     el.aiLoading.classList.remove("hidden");
     el.questionContainer.classList.add("hidden");
     el.doneBtn.disabled = true;
     el.skipBtn.disabled = true;
 
     try {
-      const question = await fetchAIQuestion(
-        type,
-        customCategoryText,
-        modelVal,
-      );
+      const question = await fetchAIQuestion(type, customCategoryText);
       setQuestion(question);
     } catch (err) {
-      setQuestion("⚠️ AI tidak merespons. Coba ganti model atau tekan Lewati!");
+      setQuestion(
+        "⚠️ AI tidak merespons. Pastikan API Key valid atau tekan Lewati!",
+      );
     }
 
     el.aiLoading.classList.add("hidden");
@@ -395,11 +382,16 @@ function getLocalQuestion(type, category) {
   return question;
 }
 
-async function fetchAIQuestion(type, category, model = "openai") {
+async function fetchAIQuestion(type, category) {
   const API_KEY =
-    typeof CONFIG !== "undefined" && CONFIG.POLLINATIONS_KEY
-      ? CONFIG.POLLINATIONS_KEY
+    typeof CONFIG !== "undefined" && CONFIG.OPENAI_API_KEY
+      ? CONFIG.OPENAI_API_KEY
       : "";
+
+  if (!API_KEY) {
+    throw new Error("API Key OpenAI belum diset di config.js");
+  }
+
   const typeLabel =
     type === "truth" ? "Truth (pertanyaan jujur)" : "Dare (tantangan)";
   const userPrompt = `Buat satu pertanyaan ${typeLabel} untuk permainan Truth or Dare yang seru, kreatif, sedikit menantang, dan bisa memancing reaksi (kaget, ngakak, atau mikir). Pertanyaan harus relevan dengan tema: "${category}". Gunakan bahasa Indonesia santai, gaya anak nongkrong. Hindari pertanyaan yang terlalu vulgar atau sensitif. Kalau tipe "truth", buat pertanyaan yang bikin orang jujur tapi deg-degan. Kalau tipe "dare", buat tantangan yang lucu, unik, atau agak out of the box tapi masih aman dilakukan. Langsung tulis pertanyaannya saja tanpa pengantar, jangan berulang, cukup 1 kalimat.`;
@@ -409,32 +401,28 @@ async function fetchAIQuestion(type, category, model = "openai") {
   const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
-    const response = await fetch(
-      "https://gen.pollinations.ai/v1/chat/completions",
-      {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: model,
-          seed: -1,
-          messages: [
-            {
-              role: "system",
-              content:
-                "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
-            },
-            {
-              role: "user",
-              content: userPrompt,
-            },
-          ],
-        }),
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
       },
-    );
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+      }),
+    });
 
     clearTimeout(timeout);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
