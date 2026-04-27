@@ -328,10 +328,10 @@ async function showResult(type) {
   switchScreen(screens.choice, screens.result);
   el.questionText.textContent = "";
 
-  // If AI category, fetch from OpenAI API
+  // If AI category, fetch from Gemini API
   if (selectedCategory === "custom") {
     if (el.aiLoadingText)
-      el.aiLoadingText.textContent = `OpenAI sedang menyiapkan pertanyaan...`;
+      el.aiLoadingText.textContent = `Gemini sedang menyiapkan pertanyaan...`;
     el.aiLoading.classList.remove("hidden");
     el.questionContainer.classList.add("hidden");
     el.doneBtn.disabled = true;
@@ -384,12 +384,12 @@ function getLocalQuestion(type, category) {
 
 async function fetchAIQuestion(type, category) {
   const API_KEY =
-    typeof CONFIG !== "undefined" && CONFIG.OPENAI_API_KEY
-      ? CONFIG.OPENAI_API_KEY
+    typeof CONFIG !== "undefined" && CONFIG.GEMINI_API_KEY
+      ? CONFIG.GEMINI_API_KEY
       : "";
 
   if (!API_KEY) {
-    throw new Error("API Key OpenAI belum diset di config.js");
+    throw new Error("API Key Gemini belum diset di config.js");
   }
 
   const typeLabel =
@@ -401,34 +401,41 @@ async function fetchAIQuestion(type, category) {
   const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`,
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          generationConfig: {
+            temperature: 0.9,
+            topK: 40,
+            topP: 0.95,
+          },
+          systemInstruction: {
+            parts: [
+              {
+                text: "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
+              },
+            ],
+          },
+          contents: [
+            {
+              parts: [{ text: userPrompt }],
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
-          },
-          {
-            role: "user",
-            content: userPrompt,
-          },
-        ],
-      }),
-    });
+    );
 
     clearTimeout(timeout);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-    const text = data?.choices?.[0]?.message?.content?.trim();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if (!text) throw new Error("Empty response from AI");
 
     return text;
