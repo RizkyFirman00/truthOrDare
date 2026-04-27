@@ -338,16 +338,8 @@ async function showResult(type) {
   if (selectedCategory === "custom") {
     const modelVal = el.aiModelSelect?.value || "openai";
     const modelNames = {
-      openai: "GPT-5 Mini",
       "openai-large": "GPT-5.2",
       gemini: "Gemini 3 Flash",
-      "gemini-fast": "Gemini 2.5 Flash Lite",
-      mistral: "Mistral",
-      "claude-fast": "Claude Haiku",
-      claude: "Claude Sonnet",
-      deepseek: "DeepSeek V3.2",
-      kimi: "Kimi K2.5",
-      grok: "Grok 4",
     };
     if (el.aiLoadingText)
       el.aiLoadingText.textContent = `${modelNames[modelVal] || modelVal} sedang menyiapkan pertanyaan...`;
@@ -410,7 +402,7 @@ async function fetchAIQuestion(type, category, model = "openai") {
       : "";
   const typeLabel =
     type === "truth" ? "Truth (pertanyaan jujur)" : "Dare (tantangan)";
-  const userPrompt = `Buat satu pertanyaan ${typeLabel} untuk permainan Truth or Dare yang seru, kreatif, sedikit menantang, dan bisa memancing reaksi (kaget, ngakak, atau mikir). Pertanyaan harus relevan dengan tema: "${category}". Gunakan bahasa Indonesia santai, gaya anak nongkrong. Hindari pertanyaan yang terlalu vulgar atau sensitif. Kalau tipe "truth", buat pertanyaan yang bikin orang jujur tapi deg-degan. Kalau tipe "dare", buat tantangan yang lucu, unik, atau agak out of the box tapi masih aman dilakukan. Langsung tulis pertanyaannya saja tanpa pengantar, cukup 1 kalimat.`;
+  const userPrompt = `Buat satu pertanyaan ${typeLabel} untuk permainan Truth or Dare yang seru, kreatif, sedikit menantang, dan bisa memancing reaksi (kaget, ngakak, atau mikir). Pertanyaan harus relevan dengan tema: "${category}". Gunakan bahasa Indonesia santai, gaya anak nongkrong. Hindari pertanyaan yang terlalu vulgar atau sensitif. Kalau tipe "truth", buat pertanyaan yang bikin orang jujur tapi deg-degan. Kalau tipe "dare", buat tantangan yang lucu, unik, atau agak out of the box tapi masih aman dilakukan. Langsung tulis pertanyaannya saja tanpa pengantar, jangan berulang, cukup 1 kalimat.`;
 
   // 20s timeout
   const controller = new AbortController();

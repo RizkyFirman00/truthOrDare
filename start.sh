@@ -2,7 +2,7 @@
 # Truth or Dare — Local Server Launcher
 # Run this script to start the app on http://localhost:8080
 
-PORT=8080
+PORT=8090
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo ""
