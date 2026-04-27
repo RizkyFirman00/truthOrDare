@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truth or Dare | Permainan Interaktif</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Animated Background -->
+    <div class="bg-mesh">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
+    <!-- Restart Button (global, floating) -->
+    <button id="restart-btn" class="restart-btn hidden" title="Mulai Ulang">
+        <i class="fa-solid fa-rotate-left"></i>
+    </button>
+
+    <main class="container">
+
+        <!-- ===== SCREEN 1: SETUP ===== -->
+        <section id="setup-screen" class="screen active glass-card">
+            <div class="logo-wrap">
+                <img src="favicon.png" class="logo-icon" alt="Logo">
+                <h1 class="logo-title">TRUTH <span class="highlight">OR</span> DARE</h1>
+            </div>
+            <p class="subtitle">Siapkan pemain dan pilih kategori!</p>
+
+            <!-- Player Input -->
+            <div class="section-label"><i class="fa-solid fa-users"></i> Pemain</div>
+            <div class="player-input-row">
+                <input type="text" id="player-name-input" placeholder="Masukkan nama pemain..." autocomplete="off">
+                <button id="add-player-btn" class="btn-icon"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <ul id="player-list" class="player-list"></ul>
+
+            <!-- Category -->
+            <div class="section-label" style="margin-top:24px;"><i class="fa-solid fa-tag"></i> Kategori</div>
+            <div class="category-grid" id="category-grid">
+                <div class="category-chip selected" data-category="Umum">😂 Umum</div>
+                <div class="category-chip" data-category="Romantis">❤️ Romantis</div>
+                <div class="category-chip" data-category="Ekstrem">🔥 Ekstrem</div>
+                <div class="category-chip" data-category="Pertemanan">🤝 Pertemanan</div>
+                <div class="category-chip ai-chip" data-category="custom">✨ Kustom (AI)</div>
+            </div>
+
+            <!-- Custom Category Input -->
+            <div id="custom-category-wrapper" class="custom-category-wrapper hidden">
+                <input type="text" id="custom-category-input" placeholder="Deskripsikan kategorimu... (contoh: Tentang dunia kerja)">
+                <div class="ai-model-row">
+                    <label class="ai-model-label"><i class="fa-solid fa-robot"></i> Model AI:</label>
+                    <select id="ai-model-select" class="ai-model-select">
+                        <option value="openai">🤖 GPT-5 Mini (Fast &amp; Balanced)</option>
+                        <option value="openai-large">🧠 GPT-5.2 (Most Powerful)</option>
+                        <option value="gemini">✨ Gemini 3 Flash (Google)</option>
+                        <option value="gemini-fast">⚡ Gemini 2.5 Flash Lite (Ultra Fast)</option>
+                        <option value="mistral">🔥 Mistral Small 3.2</option>
+                        <option value="claude-fast">🌀 Claude Haiku 4.5 (Fast)</option>
+                        <option value="claude">🌀 Claude Sonnet 4.6</option>
+                        <option value="deepseek">🔍 DeepSeek V3.2</option>
+                        <option value="kimi">🌙 Kimi K2.5 (Moonshot)</option>
+                        <option value="grok">⚡ Grok 4 Fast (xAI)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="setup-error" class="error-msg hidden"></div>
+
+            <button id="start-game-btn" class="btn btn-primary pulse" style="margin-top:24px;">
+                <i class="fa-solid fa-play"></i> Mulai Permainan
+            </button>
+        </section>
+
+        <!-- ===== SCREEN 2: RANDOMIZER ===== -->
+        <section id="randomizer-screen" class="screen hidden glass-card">
+            <p class="rando-label">Giliran siapa ya...</p>
+            <div class="rando-display" id="rando-display">?</div>
+            <div id="player-tags" class="player-tags-container"></div>
+            <p id="rando-confirm" class="rando-confirm hidden"></p>
+            <button id="spin-btn" class="btn btn-primary btn-large">
+                <i class="fa-solid fa-shuffle"></i> Acak!
+            </button>
+        </section>
+
+        <!-- ===== SCREEN 3: CHOOSE Truth or Dare ===== -->
+        <section id="choice-screen" class="screen hidden glass-card">
+            <h2 class="sub-heading">Giliran <span id="current-player-display" class="highlight"></span></h2>
+            <p class="instruction">Pilih takdirmu:</p>
+            <div class="choice-cards">
+                <div class="choice-card truth-card" id="btn-truth">
+                    <div class="card-icon"><i class="fa-solid fa-check-to-slot"></i></div>
+                    <h3>TRUTH</h3>
+                    <p>Jawab jujur dengan sepenuh hati.</p>
+                </div>
+                <div class="choice-card dare-card" id="btn-dare">
+                    <div class="card-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                    <h3>DARE</h3>
+                    <p>Terima tantangan dan buktikan!</p>
+                </div>
+            </div>
+            <button id="re-spin-btn" class="btn btn-secondary" style="margin-top:18px;">
+                <i class="fa-solid fa-shuffle"></i> Acak Ulang
+            </button>
+        </section>
+
+        <!-- ===== SCREEN 4: RESULT ===== -->
+        <section id="result-screen" class="screen hidden glass-card">
+            <div class="result-header">
+                <span id="result-type-badge" class="badge">TRUTH</span>
+            </div>
+
+            <!-- Loading state (AI) -->
+            <div id="ai-loading" class="ai-loading hidden">
+                <div class="spinner"></div>
+                <p>AI sedang menyiapkan pertanyaan...</p>
+            </div>
+
+            <div class="question-container" id="question-container">
+                <p id="question-text" class="question-text"></p>
+            </div>
+
+            <div id="category-label" class="active-category-label"></div>
+
+            <div class="action-buttons">
+                <button id="done-btn" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i> Selesai
+                </button>
+                <button id="skip-btn" class="btn btn-secondary">
+                    <i class="fa-solid fa-forward-step"></i> Lewati
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Config (API Keys) — load BEFORE script.js -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
