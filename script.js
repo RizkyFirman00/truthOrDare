@@ -392,7 +392,7 @@ async function fetchAIQuestion(type, category) {
   const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
-    const response = await fetch("/api/gemini", {
+    const response = await fetch("/tod-ai-proxy", {
       method: "POST",
       signal: controller.signal,
       headers: {

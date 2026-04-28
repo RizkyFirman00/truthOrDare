@@ -24,7 +24,7 @@ class ProxyHTTPRequestHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=DIR, **kwargs)
 
     def do_POST(self):
-        if self.path == '/api/gemini':
+        if self.path == '/tod-ai-proxy':
             # Receive content from frontend
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length > 0:
@@ -69,7 +69,7 @@ class ProxyHTTPRequestHandler(SimpleHTTPRequestHandler):
             
     # Add OPTIONS method handle for CORS preflight
     def do_OPTIONS(self):
-        if self.path == '/api/gemini':
+        if self.path == '/tod-ai-proxy':
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
