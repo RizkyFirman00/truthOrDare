@@ -17,4 +17,5 @@ echo ""
 sleep 0.5 && open "http://localhost:$PORT" &
 
 # Start server
-python3 -m http.server $PORT --directory "$DIR"
+export PORT=$PORT
+python3 "$DIR/server.py"

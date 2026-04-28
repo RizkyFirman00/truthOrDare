@@ -383,15 +383,6 @@ function getLocalQuestion(type, category) {
 }
 
 async function fetchAIQuestion(type, category) {
-  const API_KEY =
-    typeof CONFIG !== "undefined" && CONFIG.GEMINI_API_KEY
-      ? CONFIG.GEMINI_API_KEY
-      : "";
-
-  if (!API_KEY) {
-    throw new Error("API Key Gemini belum diset di config.js");
-  }
-
   const typeLabel =
     type === "truth" ? "Truth (pertanyaan jujur)" : "Dare (tantangan)";
   const userPrompt = `Buat satu pertanyaan ${typeLabel} untuk permainan Truth or Dare yang seru, kreatif, sedikit menantang, dan bisa memancing reaksi (kaget, ngakak, atau mikir). Pertanyaan harus relevan dengan tema: "${category}". Gunakan bahasa Indonesia santai, gaya anak nongkrong. Hindari pertanyaan yang terlalu vulgar atau sensitif. Kalau tipe "truth", buat pertanyaan yang bikin orang jujur tapi deg-degan. Kalau tipe "dare", buat tantangan yang lucu, unik, atau agak out of the box tapi masih aman dilakukan. Langsung tulis pertanyaannya saja tanpa pengantar, jangan berulang, cukup 1 kalimat.`;
@@ -401,35 +392,32 @@ async function fetchAIQuestion(type, category) {
   const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
+    const response = await fetch("/api/gemini", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        generationConfig: {
+          temperature: 0.9,
+          topK: 40,
+          topP: 0.95,
         },
-        body: JSON.stringify({
-          generationConfig: {
-            temperature: 0.9,
-            topK: 40,
-            topP: 0.95,
-          },
-          systemInstruction: {
-            parts: [
-              {
-                text: "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
-              },
-            ],
-          },
-          contents: [
+        systemInstruction: {
+          parts: [
             {
-              parts: [{ text: userPrompt }],
+              text: "Kamu adalah host permainan Truth or Dare. Hanya berikan pertanyaan atau tantangannya saja, tanpa penjelasan tambahan.",
             },
           ],
-        }),
-      },
-    );
+        },
+        contents: [
+          {
+            parts: [{ text: userPrompt }],
+          },
+        ],
+      }),
+    });
 
     clearTimeout(timeout);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
